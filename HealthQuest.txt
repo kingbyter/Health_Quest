@@ -1,0 +1,298 @@
+var num_gold = 1100; 
+var img = new WebImage("https://openclipart.org/download/227980/8-Bit-Character-1.svg"); 
+var hat_img = new WebImage(""); 
+var drive = new WebImage("");
+
+var show_gold = new Text("x " + num_gold, "20pt Arial"); 
+var MAXX = 400;
+var MAXY = 400;
+
+var hatButt;
+var headButt; 
+var pantButt;
+var shirtButt;
+
+var show_output = new Text("", "20pt Arial");
+show_output.setPosition(getWidth() / 2 - show_output.getWidth(), 3 *getHeight()/ 4);
+show_output.setColor(Color.red); 
+add(show_output);
+
+
+
+var sleep = 10;
+var food = 10;
+var water = 10;
+var text;
+var quest;
+var sleepHrs;
+var hoursSleepQuest = new Text("Sleep for " + sleepHrs + " hours");
+var drinkWaterQuest = new Text("Drink water");
+var eatFoodQuest = new Text("Eat healthy food");
+var quests = [hoursSleepQuest, drinkWaterQuest, eatFoodQuest];
+var time = 0;
+var numQuests = 0;
+
+var addQuestText = new Text("Quests");
+var questArray = [];
+var isMale;
+var age;
+
+
+
+
+   
+function start() { 
+    
+    loadDefault(); 
+    enterStore(); 
+
+    addQuestText.setPosition(getWidth() - addQuestText.getWidth() - 75, addQuestText.getHeight() + 10);
+    addQuest();
+ 
+    
+    var rectQuest = new Rectangle(addQuestText.getWidth(), addQuestText.getHeight()); 
+    rectQuest.setPosition(addQuestText.getX(), addQuestText.getY() - 22); 
+    rectQuest.setColor(Color.purple); 
+    add(rectQuest); 
+    
+    addQuestText.setColor(Color.white); 
+    add(addQuestText);
+        
+    
+    setTimer(onTick, 60);
+
+   
+} 
+
+function onTick(){
+    mouseClickMethod(onClick);
+}
+function onClick(e){
+    var elem = getElementAt(e.getX(), e.getY());
+    if(elem != null){
+        if(elem.getType() == "WebImage"){
+           if (elem.getWidth() == 51) { //helicopter
+              buy("https://openclipart.org/download/239653/PixelartHelicopter.svg", 1000); 
+           } 
+           if (elem.getWidth() == 50) { //santa
+               buy("https://openclipart.org/download/166570/Hat-of-Santa.svg", 200); 
+           } 
+           if (elem.getWidth() == 49) { //hat
+               buy("https://openclipart.org/download/36829/Magritte-hat.svg", 10); 
+           } 
+           
+        }
+        if(elem == hoursSleepQuest){
+            print("yeet");
+            if(sleep >= 8){
+                numQuests --;
+                remove(elem);
+                num_gold += 100;
+                show_gold.setText("x " + num_gold);
+                if(questArray.length > 0){
+                    for(var i = questArray.indexOf(elem); i < questArray.length; i++){
+                        questArray[i].move(0, -50);
+
+
+                   }
+
+
+               }
+                questArray.remove(questArray.indexOf(elem));
+            }
+        } else if(elem == drinkWaterQuest){
+            print("yeeet");
+            if(water > 0){
+                remove(elem);
+                numQuests --;
+                num_gold += 100;
+                show_gold.setText("x " + num_gold);
+                if(questArray.length > 0){
+                    for(var i = questArray.indexOf(elem); i < questArray.length; i++){
+                        questArray[i].move(0, -50);
+
+
+                   }
+
+
+               }
+                questArray.remove(questArray.indexOf(elem));
+            }
+        } else if(elem == eatFoodQuest){
+            print("yeeeet");
+            if(food > 0){
+                remove(elem);
+                numQuests--;
+                num_gold += 100;
+                show_gold.setText("x " + num_gold);
+                if(questArray.length > 0){
+                    for(var i = questArray.indexOf(elem); i < questArray.length; i++){
+                        questArray[i].move(0, -50);
+
+
+                   }
+
+
+               }
+                questArray.remove(questArray.indexOf(elem));
+            }
+        } else if(elem == addQuestText){
+            addQuest();
+        }
+    }
+}
+function addQuest(){
+    if(numQuests > 0){
+        while(true){
+            quest = quests[Randomizer.nextInt(0, quests.length - 1)];
+            if(questArray.indexOf(quest) == -1){
+                break;
+            }
+        }
+    } else {
+        quest = quests[Randomizer.nextInt(0, quests.length - 1)];
+    }
+    quest.setPosition(addQuestText.getX() + addQuestText.getWidth()/2 - quest.getWidth()/2, quest.getHeight() + 50 + 50 * numQuests);
+    add(quest);
+    questArray.push(quest);
+    numQuests++;
+}
+
+
+
+function addHat(url, width, height, x, y) { 
+    var imgHat = new WebImage(url); 
+    imgHat.setSize(width, height); 
+    imgHat.setPosition(x, y); 
+    add(imgHat); 
+} 
+
+function addText(text, x, y) { 
+   var temp = new Text(text, "10pt Arial"); 
+   temp.setPosition(x, y); 
+   temp.setColor(Color.black); 
+   add(temp); 
+} 
+function enterStore(){
+    
+    
+    
+    headButt = new Rectangle(40,10);
+    setPos(headButt, getWidth()*1/4, getHeight() - headButt.getHeight());
+    headButt.setColor(Color.blue);
+    
+    
+    addHat("https://openclipart.org/download/239653/PixelartHelicopter.svg", 51, 50, headButt.getX(), getHeight() - 70);
+    addText("1000$", headButt.getX(), getHeight() - 5); 
+    
+    
+    shirtButt = new Rectangle(40,10);
+    setPos(shirtButt, getWidth()*2/4, getHeight() - shirtButt.getHeight());
+    shirtButt.setColor(Color.red);
+   
+    
+    addHat("https://openclipart.org/download/166570/Hat-of-Santa.svg", 50, 51, shirtButt.getX(), getHeight() - 70);
+    addText("200$", shirtButt.getX() + 7, getHeight() - 5); 
+    
+    pantButt = new Rectangle(40,10);
+    setPos(pantButt, getWidth()*3/4, getHeight() - pantButt.getHeight());
+ 
+    
+    addHat("https://openclipart.org/download/36829/Magritte-hat.svg", 49, 50, pantButt.getX(), getHeight() - 70);
+    addText("10$", pantButt.getX() + 10, getHeight() - 5); 
+    
+    mouseClickMethod(onClick);
+}
+
+function setPos (rect,x,y){
+    rect.setPosition(x - rect.getWidth()/2,y - rect.getHeight()/2);
+}
+
+
+function addGold() { 
+  var gold = new WebImage("http://icons.iconarchive.com/icons/ph03nyx/super-mario/128/Retro-Coin-icon.png"); 
+   gold.setSize(30, 30); 
+   gold.setPosition(10, 53); 
+   add(gold);
+   
+   show_gold.setPosition(gold.getWidth() + 15, 50 + show_gold.getHeight()); 
+  show_gold.setColor(Color.black); 
+   add(show_gold);
+}
+
+function buy(hatImg, g) { 
+  if (g > num_gold) { 
+    
+    show_output.setText("Not enough $. Hint: budget better",);  
+    show_output.setPosition(getWidth() / 2 - show_output.getWidth() / 2, 3 *getHeight()/ 4 + 10);
+  }else {  
+    show_output.setText("transaction complete");
+    show_output.setPosition(getWidth() / 2 - show_output.getWidth() / 2, 3 *getHeight()/ 4 + 10);
+    hat_img = new WebImage(hatImg); 
+    num_gold = num_gold - g; 
+    hat_img.setSize(75, 75); 
+    hat_img.setPosition(img.getWidth() / 2 - hat_img.getWidth() / 2, 80); 
+    add(hat_img); 
+    show_gold.setText("x " + num_gold);
+   }
+} 
+
+
+
+function load_graphics() { 
+    
+    addGold(); 
+    
+    var img_head;
+    var img_body; 
+    var img_pants; 
+    var img_shoes;
+     
+    img.setSize(120, 200); 
+    img.setPosition(0, img.getHeight() / 2 + 20); 
+    add(img); 
+   
+}
+
+function askHat(url, price) { 
+    var buyHat = readLine("do you want to buy the hat? (Y/N) "); 
+   if (buyHat == "Y") { 
+      buy(url, price); 
+   }  
+} 
+ 
+function loadDefault() { //replace all text input with buttons
+
+   var name = readLine("Name?"); 
+   
+   var gender = readLine("Gender? (M/F)");
+   
+   age = readInt("Age?");
+   sleepHrs = 0;
+   
+   if(age < 3){
+        sleepHrs = 12;
+    } else if(age < 13){
+        sleepHrs = 10;
+    } else {
+        sleepHrs = 8;
+    }
+    hoursSleepQuest.setText("Sleep for " + sleepHrs + " hours");
+   
+   isMale = (gender == "M");
+  
+   var show_name = new Text(name, "20pt Arial"); 
+   
+   show_name.setColor(Color.black); 
+  
+   show_name.setPosition(getWidth() / 7 - show_name.getWidth() / 2, show_name.getHeight()); 
+   
+   add(show_name); 
+   
+   
+   load_graphics(); 
+   
+   
+}  
+
+
