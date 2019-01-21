@@ -1,0 +1,492 @@
+
+<html>
+<head>
+<title>HealthHackGame</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+<script type="text/javascript" src="https://static.codehs.com/gulp/433074dcd77916333a2e98014b8ee5ec7f0b0ba7/chs-js-lib/chs.js"></script>
+
+
+<style>
+canvas {
+    border: 1px solid black;
+    display: inline-block;
+    vertical-align: top;
+}
+
+pre {
+    border: 1px solid black;
+    display: inline-block;
+    width: 400px;
+    height: 500px;
+    background-color: #F5F5F5;
+}
+</style>
+
+</head>
+
+<body>
+<h1>HealthHackGame</h1>
+
+
+
+<canvas
+width="400"
+height="500"
+class="codehs-editor-canvas"></canvas>
+<pre id="console"></pre>
+
+<script>
+window.onload = function() {
+
+    var WIDTH = 400;
+var GRID_WIDTH = 5;
+var GRID_HEIGHT = 5;
+var BUFFER = 50;
+var GRID_SIZE = (WIDTH - BUFFER * 2) / GRID_WIDTH;
+var BORDER = 1;
+var DELAY = 15;
+var counter;
+var time = 30;
+var points = 0;
+var cp = 0;
+var ca;
+var ci = new WebImage("https://image.flaticon.com/icons/svg/117/117091.svg");
+var cimage = new WebImage("https://image.flaticon.com/icons/svg/117/117091.svg");
+
+var BAR_HEIGHT = WIDTH / 4;
+
+var grid;
+
+var x = 0;
+var y = 0;
+var dragging;
+var run = false;
+
+var current = new Grid(0, 0);
+var SMALL_CELL = BAR_HEIGHT / 6;
+var banner;
+var timerText;
+var pointText;
+
+var CELL_RECT = new Rectangle(SMALL_CELL, SMALL_CELL);
+var butt = new WebImage("https://image.flaticon.com/icons/svg/117/117091.svg");
+var skip;
+
+var food = {
+    "Chicken": {
+        points: 4,
+        grid:
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+            [new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+            [new Rectangle(SMALL_CELL, SMALL_CELL),new Text("null", "null")]],
+        color: new Color(245, 203, 167),
+        image: new WebImage("http://clipart-library.com/newimages/chicken-clip-art-25.jpg")
+    },
+            
+    "Lettuce": {
+        points: 4,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL)],
+	        [new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(46, 204, 113),
+        image: new WebImage("http://clipart-library.com/data_images/537562.gif")
+    },
+    
+    "Bread": {
+        points: 3,
+        grid:
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Text("null", "null")],
+            [new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(248, 196, 113),
+        image: new WebImage("http://worldartsme.com/images/food-bread-clipart-1.jpg")
+    },
+    
+    "Cheese": {
+        points: 2,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+            [new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(244, 208, 63),
+        image: new WebImage("http://worldartsme.com/images/cheese-clipart-1.jpg")
+    },
+    
+    "Spinach": {
+        points: 6,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Text("null", "null")],
+	        [new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+	        [new Rectangle(SMALL_CELL, SMALL_CELL),new Text("null", "null")]],
+        color: new Color(34, 153, 84),
+        image: new WebImage("https://www.clipartmax.com/png/full/155-1552167_spinach-spinach-clipart-png.png")
+    },
+    
+    "Milk": {
+        points: 4,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+	        [new Text("null", "null"),new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(244, 246, 247),
+        image: new WebImage("http://worldartsme.com/images/milk-cartoon-clipart-1.jpg")
+    },
+    
+    "Tomato": {
+        points: 4,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(231, 76, 60),
+        image: new WebImage("https://images.all-free-download.com/images/graphiclarge/tomato_310436.jpg")
+    },
+    
+    "Chips": {
+        points: 1,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(252, 243, 207),
+        image: new WebImage("http://worldartsme.com/images/free-potato-chips-clipart-1.jpg")
+    },
+    
+    "Fish": {
+        points: 5,
+        grid: 
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL)],
+	        [new Rectangle(SMALL_CELL, SMALL_CELL)],
+	        [new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(245, 183, 177),
+        image: new WebImage("https://images-na.ssl-images-amazon.com/images/I/51n93nOPDIL._SX342_.jpg")
+    },
+    
+    "Lamb": {
+        points: 4,
+        grid:
+	        [[new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+            [new Rectangle(SMALL_CELL, SMALL_CELL),new Rectangle(SMALL_CELL, SMALL_CELL)],
+            [new Text("null", "null"),new Rectangle(SMALL_CELL, SMALL_CELL)]],
+        color: new Color(160, 64, 0),
+        image: new WebImage("https://png.clipart.me/previews/e33/pork-chops-clip-art-43841.jpg")
+    }
+};
+
+var WINDOW_WIDTH = GRID_SIZE * GRID_WIDTH + 2 * BUFFER;
+var WINDOW_HEIGHT = GRID_SIZE * GRID_HEIGHT + 2 * BUFFER + BAR_HEIGHT;
+
+var play = new Text("Click to Play!", BUFFER + "pt Arial");
+
+function start() {
+    play.setPosition((getWidth() - play.getWidth()) / 2, (getHeight() - play.getHeight()) / 2);
+    add(play);
+    mouseClickMethod(click);
+}
+
+function ei() {
+    removeAll();
+    time = 30;
+    points = 0;
+    cp = 0;
+    ci = new WebImage("https://image.flaticon.com/icons/svg/117/117091.svg");
+    cimage = new WebImage("https://image.flaticon.com/icons/svg/117/117091.svg");
+    run = true;
+    current = new Grid(0, 0);setSize(WINDOW_WIDTH,WINDOW_HEIGHT);
+    var r = new Rectangle(GRID_WIDTH * GRID_SIZE, GRID_HEIGHT * GRID_SIZE);
+    r.setPosition(BUFFER, BUFFER);
+    add(r);
+    
+    var bar = new Rectangle(getWidth(), BAR_HEIGHT);
+    bar.setColor(Color.grey);
+    bar.setPosition(0, getHeight() - BAR_HEIGHT);
+    add(bar);
+    
+    grid = new Grid(GRID_HEIGHT, GRID_WIDTH);
+    
+    for(var i = 0; i < GRID_WIDTH; i++){
+        for(var j = 0; j < GRID_HEIGHT; j++){
+            var rect = new Rectangle(GRID_SIZE - BORDER * 2,
+                                    GRID_SIZE - BORDER * 2);
+            rect.setColor(Color.gray);
+            rect.setPosition(BUFFER + i * GRID_SIZE + BORDER,
+                        BUFFER + j * GRID_SIZE + BORDER);
+            grid.set(j, i, rect)
+            add(rect);
+        }
+    }
+    
+    dragging = false;
+    counter = 1;
+    
+    banner = new Text("Fill your plate!", BUFFER / 3 + "pt Arial");
+    banner.setPosition((getWidth() - banner.getWidth()) / 2, 2 * BUFFER/3);
+    add(banner);
+    
+    timerText = new Text("Time: " + time, SMALL_CELL + "pt Arial");
+    timerText.setPosition(0, getHeight());
+    add(timerText);
+    
+    pointText = new Text("Points: " + points, SMALL_CELL + "pt Arial");
+    pointText.setPosition(0, getHeight() - BAR_HEIGHT + pointText.getHeight());
+    add(pointText);
+    
+    skip = new Rectangle(BAR_HEIGHT,BAR_HEIGHT);
+    skip.setPosition(getWidth() - BAR_HEIGHT, getHeight() - BAR_HEIGHT);
+    skip.setColor(Color.gray);
+    add(skip);
+    
+    butt.setSize(BAR_HEIGHT,BAR_HEIGHT);
+    butt.setPosition(getWidth() - BAR_HEIGHT, getHeight() - BAR_HEIGHT);
+    add(butt);
+    
+    nextBlock();
+    setTimer(onTick, DELAY);
+    mouseDownMethod(down);
+    mouseDragMethod(drag);
+    mouseUpMethod(up);
+}
+
+function onTick(){
+    counter++;
+    if(counter == 60){
+        counter = 0;
+        time--;
+        timerText.setText("Time: " + time);
+        if(time == 0){
+            run = false;
+            removeAll();
+            end();
+            stopTimer();
+        }
+    }
+    // for(var i = 0; i < current.numCols(); i++){
+    //     for(var j = 0; j < current.numRows(); j++){
+    //         var a = current.get(j,i);
+    //         if(a.getType() == Rectangle && (i != 0 || j != 0)){
+    //             a.setPosition(current.get(0,0).getX() + i * a.getWidth(),
+    //                         current.get(0,0).getY() + j * a.getHeight());
+    //             a.setColor(current.get(0,0).getColor());
+    //         }
+    //     }
+    // }
+}
+
+function click(e){
+    // if(x > play.getX() && x < play.getX() + play.getWidth() && 
+    //     y > play.getY() && y < play.getY() + play.getHeight()){
+    //     ei();
+    // }
+    if(!run){
+        ei();
+    }
+    if(run && x > skip.getX() && x < skip.getX() + GRID_SIZE && 
+        y > skip.getY() && y < skip.getY() + GRID_SIZE){
+        for(var i = 0; i < current.numCols(); i++){
+            for(var j = 0; j < current.numRows(); j++){
+                var c = current.get(j,i);
+                if(c.getType() == 'Rectangle'){
+                    c.setPosition(getWidth(), getHeight())
+                }
+            }
+        }
+        current = null;
+        nextBlock();
+        cimage.setPosition(getWidth(), getHeight());
+        cimage = ci;
+        cimage.setPosition((getWidth() - banner.getWidth() - BUFFER) / 2, 0);
+        add(cimage);
+        banner.setText(ca + ": " + cp + " points");
+        banner.setPosition((getWidth() - banner.getWidth() + BUFFER) / 2, 2 * BUFFER/3);
+    }
+}
+
+function end(){
+    var r = new Rectangle(GRID_WIDTH * GRID_SIZE, GRID_HEIGHT * GRID_SIZE);
+    r.setPosition(BUFFER, BUFFER);
+    add(r);
+    for(var i = 0; i < GRID_WIDTH; i++){
+        for(var j = 0; j < GRID_HEIGHT; j++){
+            add(grid.get(j, i))
+        }
+    }
+    banner.setText("Your Plate:");
+    banner.setPosition((getWidth() - banner.getWidth()) / 2, 2 * BUFFER/3);
+    add(banner);
+    
+    var txt;
+    if(points >= 35){
+        txt = "AMAZING!";
+    }else if(points >= 25){
+        txt = "Good Job!";
+    }else if(points >= 15){
+        txt = "Eat Better!";
+    }else{
+        txt = "Try Again!";
+    }
+    
+    var blurb = new Text(txt, BUFFER / 2 + "pt Arial");
+    blurb.setPosition((getWidth() - blurb.getWidth()) / 2, getHeight() - BUFFER);
+    add(blurb);
+    
+    var blurb2 = new Text("Score: " + points, BUFFER / 2 + "pt Arial");
+    blurb2.setPosition((getWidth() - blurb2.getWidth()) / 2, getHeight() - BUFFER - blurb.getHeight() - 5);
+    add(blurb2);
+}
+
+function down(e){
+    x = e.getX();
+    y = e.getY();
+    //nextBlock();
+    println(dragging)
+    if(dragging && run){
+        current.get(0,0).setPosition(x, y);
+        cimage.setPosition(getWidth(), getHeight());
+        cimage = ci;
+        cimage.setPosition((getWidth() - banner.getWidth() - BUFFER) / 2, 0);
+        cimage.setSize(BUFFER,BUFFER);
+        add(cimage);
+        banner.setText(ca + ": " + cp + " points");
+        banner.setPosition((getWidth() - banner.getWidth() + BUFFER) / 2, 2 * BUFFER/3);
+    }else{
+        for(var i = 0; i < current.numCols(); i++){
+            for(var j = 0; j < current.numRows(); j++){
+                var cell = current.get(j, i);
+                if(x > cell.getX() && x < cell.getX() + GRID_SIZE && 
+                    y > cell.getY() && y < cell.getY() + GRID_SIZE){
+                        dragging = true;
+                        break;
+                }
+            }
+        }
+    }
+}
+
+function up(e){
+    dragging = false;
+    var a = grid.numCols(),b = grid.numCols();
+    for(var i = 0; i < grid.numCols(); i++){
+        for(var j = 0; j < grid.numRows(); j++){
+            var cell = grid.get(j, i);
+            if(x > cell.getX() && x < cell.getX() + GRID_SIZE && 
+                y > cell.getY() && y < cell.getY() + GRID_SIZE){
+                //println("[" + i + ", " + j + "]");
+                b = i;
+                a = j;
+                break;
+            }
+        }
+    }
+    if(grid.inBounds(a,b)){
+        var cell = grid.get(a, b);
+        if(current.get(0,0).getY() == e.getY() && cell.getColor() == Color.gray){
+            var valid = true;
+            for(var i = 0; i < current.numCols(); i++){
+                for(var j = 0; j < current.numRows(); j++){
+                    var c = current.get(j,i);
+                    if(c.getType() == 'Rectangle' && (!grid.inBounds(a + j,b + i) || grid.get(a + j,b + i).getColor() != Color.gray)){
+                        valid = false;
+                    }
+                }
+            }
+            if(valid){
+                for(var i = 0; i < current.numCols(); i++){
+                    for(var j = 0; j < current.numRows(); j++){
+                        var c = current.get(j,i);
+                        if(c.getType() == 'Rectangle'){
+                            grid.get(a + j,b + i).setColor(c.getColor());
+                            c.setPosition(getWidth(), getHeight())
+                        }
+                    }
+                }
+                points += cp;
+                pointText.setText("Points: " + points);
+                current = null;
+                nextBlock();
+                // cimage.setPosition(getWidth(), getHeight());
+                // cimage = ci;
+                // cimage.setPosition((getWidth() - banner.getWidth() - BUFFER) / 2, 0);
+                // add(cimage);
+                // banner.setText(ca + ": " + cp + " points");
+                // banner.setPosition((getWidth() - banner.getWidth() + BUFFER) / 2, 2 * BUFFER/3);
+            }
+        }
+    }
+}
+
+function drag(e){
+    x = e.getX();
+    y = e.getY();
+    if(dragging && run){
+        current.get(0,0).setPosition(x, y);
+        cimage.setPosition(getWidth(), getHeight());
+        cimage = ci;
+        cimage.setSize(BUFFER,BUFFER);
+        cimage.setPosition((getWidth() - banner.getWidth() - BUFFER) / 2, 0);
+        add(cimage);
+        banner.setText(ca + ": " + cp + " points");
+        banner.setPosition((getWidth() - banner.getWidth() + BUFFER) / 2, 2 * BUFFER/3);
+    }
+    for(var i = 0; i < current.numCols(); i++){
+        for(var j = 0; j < current.numRows(); j++){
+            var a = current.get(j,i);
+            if(a.getType() == 'Rectangle' && (i != 0 || j != 0)){
+                a.setPosition(current.get(0,0).getX() + i * a.getWidth(),
+                            current.get(0,0).getY() + j * a.getHeight());
+                a.setColor(current.get(0,0).getColor());
+            }
+        }
+    }
+}
+
+function nextBlock(){
+    var size = 0;
+    for(var key in food){
+        size++;
+    }
+    var count = Randomizer.nextInt(0, size - 1);
+    //var count = 0;
+    //println(count);
+    var arr;
+    var a;
+    var c;
+    var p;
+    var i;
+    for(var key in food){
+        a = key;
+        arr = food[key].grid;
+        c = food[key].color;
+        p = food[key].points;
+        i = food[key].image;
+        count--;
+        if(count < 0){
+            break;
+        }
+    }
+    current = new Grid(arr.length, arr[0].length);
+    current.initFromArray(arr);
+    cp = p;
+    ca = a;
+    ci = i;
+    ci.setSize(BUFFER,BUFFER);
+    
+    //println("i " + current);
+    current.get(0,0).setPosition((getWidth() - current.numCols() * SMALL_CELL) / 2, getHeight() - BAR_HEIGHT / 3 - current.numRows() * SMALL_CELL);
+    current.get(0,0).setColor(c);
+    for(var i = 0; i < current.numCols(); i++){
+        for(var j = 0; j < current.numRows(); j++){
+            var a = current.get(j,i);
+            if(a.getType() == 'Rectangle' && (i != 0 || j != 0)){
+                a.setPosition(current.get(0,0).getX() + i * a.getWidth(),
+                                current.get(0,0).getY() + j * a.getHeight());
+                a.setColor(current.get(0,0).getColor());
+            }
+            add(a);
+        }
+    }
+}
+
+
+    if (typeof start === 'function') {
+        start();
+    }
+};
+</script>
+
+</body>
+</html>
